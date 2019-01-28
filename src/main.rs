@@ -50,14 +50,6 @@ struct Talk {
     description: String,
 }
 
-fn find_by_id(values: &Vector<Category>, search: Option<Uuid>) -> Option<Category> {
-    search.and_then(|id| values.into_iter().find(|v| v.id == id).map(|v| v.clone()))
-}
-
-fn find_by_id_format(values: &Vector<Format>, search: Option<Uuid>) -> Option<Format> {
-    search.and_then(|id| values.into_iter().find(|v| v.id == id).map(|v| v.clone()))
-}
-
 fn group_by<A, R, I>(origin: &Vector<A>, id: I) -> HashMap<R, Vector<&A>>
     where R: Hash + Eq + Clone, A: Clone, I: Fn(&A) -> R {
     origin.iter()
@@ -68,16 +60,21 @@ fn group_by<A, R, I>(origin: &Vector<A>, id: I) -> HashMap<R, Vector<&A>>
         })
 }
 
-fn talks_by_categories<'a>(categories: &Vector<Category>, talks: &'a Vector<Talk>) -> HashMap<Option<Category>, Vector<&'a Talk>> {
-    group_by(talks, |talk| talk.category)
-        .into_iter().map(|(key, value)| (find_by_id(categories, key), value))
+fn map_keys<'a, A, B, R, F>(map: HashMap<A, B>, operation: F) -> HashMap<R, B>
+    where F: Fn(&A) -> R, A : Hash + Eq, R : Hash + Eq {
+    map.into_iter()
+        .map(|(key, value)| (operation(&key), value))
         .collect()
 }
 
+fn talks_by_categories<'a>(categories: &Vector<Category>, talks: &'a Vector<Talk>) -> HashMap<Option<Category>, Vector<&'a Talk>> {
+    let values = group_by(talks, |talk| talk.category);
+    map_keys(values, |uuid| uuid.and_then(|id| categories.into_iter().find(|v| v.id == id).map(|v| v.clone())))
+}
+
 fn talks_by_format<'a>(talks: &'a Vector<Talk>, formats: &Vector<Format>) -> HashMap<Option<Format>, Vector<&'a Talk>> {
-    group_by(talks, |talk| talk.format)
-        .into_iter().map(|(key, value)| (find_by_id_format(formats, key), value))
-        .collect()
+    let group_by = group_by(talks, |talk| talk.format);
+    map_keys(group_by, |uuid| uuid.and_then(|id| formats.into_iter().find(|v| v.id == id).map(|v| v.clone())))
 }
 
 fn main() -> Result<(), Error> {

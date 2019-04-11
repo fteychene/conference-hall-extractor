@@ -45,5 +45,6 @@ pub struct Speaker {
     pub photo_url: Option<String>,
     pub twitter: Option<String>,
     pub github: Option<String>,
-    pub city: Option<String>
+    pub city: Option<String>,
+    pub email: Option<String>
 }

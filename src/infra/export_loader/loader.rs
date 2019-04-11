@@ -68,7 +68,8 @@ impl Into<DomainSpeaker> for &Speaker {
             github: self.github.clone(),
             photo_url: self.photo_url.clone(),
             twitter: self.twitter.clone(),
-            city: self.city.clone()
+            city: self.city.clone(),
+            email: self.email.clone()
         }
     }
 }

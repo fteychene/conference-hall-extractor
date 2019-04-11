@@ -5,10 +5,15 @@ pub fn confirmed_talks(talk: &Talk) -> bool {
     talk.state == "confirmed"
 }
 
+pub fn not<T, F>(f: F) -> impl Fn(&T) -> bool
+    where F: Fn(&T) -> bool {
+    move | v | { !f(v) }
+}
+
 pub fn confirmed_and_specific_talks(specific_talks: Vector<String>) -> impl Fn(&Talk) -> bool {
     move |talk| {
         confirmed_talks(talk)
-            || (talk.state != "rejected" && specific_talks.contains(&talk.title))
+            || specific_talks.contains(&talk.title)
     }
 }
 
